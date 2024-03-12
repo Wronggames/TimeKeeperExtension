@@ -3,12 +3,12 @@ class PauseResumeExtension {
     this.runtime = runtime;
     this.timers = {}; // Initialize an empty object to store timer values
     this.countUpValues = {}; // Initialize an empty object to store count-up values
-    this.intervals = {}; // Initialize an empty object to store intervals
+    this.timerInterval = null; // Initialize timer interval variable
   }
 
   getInfo() {
     return {
-      id: 'pauseresume',
+      id: 'sparkycreations',
       name: 'TimeKeeper',
       color1: '#5CB1D6',
       blocks: [
@@ -174,10 +174,20 @@ class PauseResumeExtension {
     if (!this.timers.hasOwnProperty(timerName)) {
       this.timers[timerName] = 0; // Initialize the timer value to 0 if it doesn't exist
       this.countUpValues[timerName] = countUpValue; // Set the count-up value for the timer
-      // Create an interval to increment the timer value
-      this.intervals[timerName] = setInterval(() => {
-        this.timers[timerName] += this.countUpValues[timerName];
-      }, 1); // Run every millisecond
+      // Start the timer interval if not already started
+      if (!this.timerInterval) {
+        this.timerInterval = setInterval(() => {
+          this.updateTimers(); // Update all timers
+        }, 1); // Run every millisecond
+      }
+    }
+  }
+
+  updateTimers() {
+    for (const timerName in this.timers) {
+      if (this.timers.hasOwnProperty(timerName)) {
+        this.timers[timerName] += this.countUpValues[timerName]; // Update timer value
+      }
     }
   }
 
@@ -194,25 +204,17 @@ class PauseResumeExtension {
   }
 
   deleteAllTimers() {
+    clearInterval(this.timerInterval); // Clear timer interval
     this.timers = {}; // Clear all timers
     this.countUpValues = {}; // Clear all count-up values
-    for (const timerName in this.intervals) {
-      clearInterval(this.intervals[timerName]); // Clear all intervals
-    }
-    this.intervals = {}; // Clear all interval references
+    this.timerInterval = null; // Reset timer interval variable
   }
 
   deleteTimerNamed(args) {
     const timerName = args.TIMERNAME;
     if (this.timers.hasOwnProperty(timerName)) {
       delete this.timers[timerName]; // Delete timer value
-    }
-    if (this.countUpValues.hasOwnProperty(timerName)) {
       delete this.countUpValues[timerName]; // Delete count-up value
-    }
-    if (this.intervals.hasOwnProperty(timerName)) {
-      clearInterval(this.intervals[timerName]); // Clear interval
-      delete this.intervals[timerName]; // Delete interval reference
     }
   }
 }
